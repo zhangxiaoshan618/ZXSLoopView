@@ -1,0 +1,11 @@
+platform :ios, '8.0'
+
+use_frameworks!
+
+target 'ZXSLoopView' do
+
+pod "SDWebImage"
+
+end
+
+
