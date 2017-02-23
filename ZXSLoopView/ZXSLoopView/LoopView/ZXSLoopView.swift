@@ -12,7 +12,7 @@ let kZXSLoopViewCellID = "ZXSLoopViewCellID"
 
 class ZXSLoopView: UIView {
     
-    var urls: [NSURL]? {
+    var urls: [URL]? {
         didSet {
             stopTimer()
             self.collectionView.reloadData()
@@ -20,10 +20,10 @@ class ZXSLoopView: UIView {
             startTimer()
         }
     }
-    var selectedBlock: ((index: Int)->())?
-    private weak var timer: NSTimer?
+    var selectedBlock: ((_ index: Int)->())?
+    fileprivate weak var timer: Timer?
     
-    init(frame: CGRect, urls: [NSURL], selectedBlock: ((index: Int)->())) {
+    init(frame: CGRect, urls: [URL], selectedBlock: @escaping ((_ index: Int)->())) {
         super.init(frame: frame)
         self.urls = urls
         self.selectedBlock = selectedBlock
@@ -37,103 +37,103 @@ class ZXSLoopView: UIView {
         setUpUI()
     }
     
-    private func setUpUI() {
+    fileprivate func setUpUI() {
         prepareCollectionView()
         preparePageView()
     }
     
-    private func preparePageView() {
+    fileprivate func preparePageView() {
         pageView.numberOfPages = urls!.count
         pageView.sizeToFit()
         let w = pageView.bounds.width
         let h = pageView.bounds.height
         let x = (self.bounds.width - w) * 0.5
         let y = self.bounds.height - 10 - h
-        pageView.frame = CGRectMake(x, y, w, h)
-        pageView.currentPageIndicatorTintColor = UIColor.redColor()
-        pageView.pageIndicatorTintColor = UIColor.whiteColor()
+        pageView.frame = CGRect(x: x, y: y, width: w, height: h)
+        pageView.currentPageIndicatorTintColor = UIColor.red
+        pageView.pageIndicatorTintColor = UIColor.white
         
         addSubview(pageView)
     }
     
-    private func prepareCollectionView() {
+    fileprivate func prepareCollectionView() {
         collectionView.frame = self.bounds
-        collectionView.backgroundColor = UIColor.whiteColor()
-        collectionView.registerClass(ZXSLoopViewCell.self, forCellWithReuseIdentifier: kZXSLoopViewCellID)
+        collectionView.backgroundColor = UIColor.white
+        collectionView.register(ZXSLoopViewCell.self, forCellWithReuseIdentifier: kZXSLoopViewCellID)
         collectionView.delegate = self
         collectionView.dataSource = self
         
         addSubview(collectionView)
-        let indexPath = NSIndexPath(forRow: urls!.count * 100, inSection: 0)
-        collectionView.scrollToItemAtIndexPath(indexPath, atScrollPosition: .Left, animated: false)
+        let indexPath = IndexPath(row: urls!.count * 100, section: 0)
+        collectionView.scrollToItem(at: indexPath, at: .left, animated: false)
     }
     
-    private func startTimer() {
+    fileprivate func startTimer() {
         if urls!.count <= 1 || self.timer != nil {
             return
         }
         
-        let timer = NSTimer(timeInterval: 3, target: self, selector: "fireTimer", userInfo: nil, repeats: true)
+        let timer = Timer(timeInterval: 3, target: self, selector: #selector(ZXSLoopView.fireTimer), userInfo: nil, repeats: true)
         self.timer = timer
         
-        NSRunLoop.currentRunLoop().addTimer(timer, forMode: NSRunLoopCommonModes)
+        RunLoop.current.add(timer, forMode: RunLoopMode.commonModes)
     }
     
-    private func stopTimer() {
+    fileprivate func stopTimer() {
         self.timer?.invalidate()
         self.timer = nil
     }
     
     // MARK: 私有函数
     /// 时钟监听函数
-    @objc private func fireTimer() {
-        guard let indexPath = collectionView.indexPathsForVisibleItems().last else {
+    @objc fileprivate func fireTimer() {
+        guard let indexPath = collectionView.indexPathsForVisibleItems.last else {
             return
         }
         
-        let next = NSIndexPath(forItem: indexPath.row + 1, inSection: indexPath.section)
-        if next.item == urls!.count * 200 {
+        let next = IndexPath(item: (indexPath as NSIndexPath).row + 1, section: (indexPath as NSIndexPath).section)
+        if (next as NSIndexPath).item == urls!.count * 200 {
             return
         }
-        collectionView.scrollToItemAtIndexPath(next, atScrollPosition: .Left, animated: true)
+        collectionView.scrollToItem(at: next, at: .left, animated: true)
     }
     
     // MARK: - 懒加载
-    private lazy var collectionView = UICollectionView(frame: CGRectZero, collectionViewLayout: ZXSLoopViewLayout())
-    private lazy var pageView = UIPageControl()
+    fileprivate lazy var collectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: ZXSLoopViewLayout())
+    fileprivate lazy var pageView = UIPageControl()
 }
 
 extension ZXSLoopView: UICollectionViewDataSource, UICollectionViewDelegate {
-    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return urls!.count * (urls!.count == 1 ? 1 : 200)
     }
     
-    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCellWithReuseIdentifier(kZXSLoopViewCellID, forIndexPath: indexPath) as! ZXSLoopViewCell
-        cell.imageUrl = urls![indexPath.item % urls!.count]
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: kZXSLoopViewCellID, for: indexPath) as! ZXSLoopViewCell
+        cell.imageUrl = urls![(indexPath as NSIndexPath).item % urls!.count]
         return cell
     }
     
-    func collectionView(collectionView: UICollectionView, didEndDisplayingCell cell: UICollectionViewCell, forItemAtIndexPath indexPath: NSIndexPath) {
-        guard var offSet = collectionView.indexPathsForVisibleItems().last?.item else {
+    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard var offSet = (collectionView.indexPathsForVisibleItems.last as NSIndexPath?)?.item else {
             return
         }
         pageView.currentPage = offSet % self.urls!.count
-        if offSet == 0 || offSet == (self.collectionView.numberOfItemsInSection(0) - 1){
+        if offSet == 0 || offSet == (self.collectionView.numberOfItems(inSection: 0) - 1){
             offSet = self.urls!.count - (offSet == 0 ? 0 : 1)
-            collectionView.contentOffset = CGPointMake(CGFloat(offSet) * collectionView.bounds.width, 0)
+            collectionView.contentOffset = CGPoint(x: CGFloat(offSet) * collectionView.bounds.width, y: 0)
         }
     }
     
-    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-        self.selectedBlock?(index: indexPath.row % urls!.count)
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        self.selectedBlock?((indexPath as NSIndexPath).row % urls!.count)
     }
     
-    func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         startTimer()
     }
     
-    func scrollViewWillBeginDragging(scrollView: UIScrollView) {
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         stopTimer()
     }
 }

@@ -16,16 +16,16 @@ class ZXSLoopViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView.backgroundColor = UIColor.whiteColor()
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: kTavleViewCellID)
+        tableView.backgroundColor = UIColor.white
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: kTavleViewCellID)
         
-        var urls = [NSURL]()
+        var urls = [URL]()
         for i in 0...4 {
             let imageName = String(format: "%02d.jpg", i)
-            urls.append(NSBundle.mainBundle().URLForResource(imageName, withExtension: nil)!)
+            urls.append(Bundle.main.url(forResource: imageName, withExtension: nil)!)
         }
         
-        loopView = ZXSLoopView(frame: CGRectMake(0, 0, UIScreen.mainScreen().bounds.width, 200), urls: urls, selectedBlock: { (index) -> () in
+        loopView = ZXSLoopView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 200), urls: urls, selectedBlock: { (index) -> () in
             print("选中了第\(index)张图片。")
         })
         
@@ -35,14 +35,14 @@ class ZXSLoopViewController: UITableViewController {
     
 
     // MARK: - Table view data source
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 
         return 20;
     }
 
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier(kTavleViewCellID, forIndexPath: indexPath)
-        cell.textLabel?.text = "第\(indexPath.row)条内容"
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: kTavleViewCellID, for: indexPath)
+        cell.textLabel?.text = "第\((indexPath as NSIndexPath).row)条内容"
         
         return cell
     }

@@ -10,15 +10,15 @@ import UIKit
 
 class ZXSLoopViewLayout: UICollectionViewFlowLayout {
 
-    override func prepareLayout() {
-        super.prepareLayout()
+    override func prepare() {
+        super.prepare()
         itemSize = collectionView!.bounds.size
         minimumInteritemSpacing = 0
         minimumLineSpacing = 0
-        scrollDirection = .Horizontal
+        scrollDirection = .horizontal
         
         collectionView?.bounces = false
-        collectionView?.pagingEnabled = true
+        collectionView?.isPagingEnabled = true
         collectionView?.showsHorizontalScrollIndicator = false
     }
 }

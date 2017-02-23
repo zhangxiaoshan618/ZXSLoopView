@@ -11,9 +11,9 @@ import SDWebImage
 
 class ZXSLoopViewCell: UICollectionViewCell {
     
-    var imageUrl: NSURL? {
+    var imageUrl: URL? {
         didSet {
-            imageView.sd_setImageWithURL(imageUrl, placeholderImage: nil, options: .RetryFailed)
+            imageView.sd_setImage(with: imageUrl, placeholderImage: nil, options: .retryFailed)
         }
     }
     
@@ -29,5 +29,5 @@ class ZXSLoopViewCell: UICollectionViewCell {
     }
     
     
-    private lazy var imageView = UIImageView()
+    fileprivate lazy var imageView = UIImageView()
 }
